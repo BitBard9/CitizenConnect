@@ -1,11 +1,4 @@
 services:
-  mongo:
-    image: mongo:7
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
   backend:
     build:
       context: ./backend
@@ -15,10 +8,7 @@ services:
       - ./backend/.env
     environment:
       PORT: "5000"
-      MONGODB_URI: mongodb://mongo:27017/citizenconnect
       FRONTEND_URL: http://localhost:8080
-    depends_on:
-      - mongo
 
   frontend:
     build:
@@ -32,6 +22,3 @@ services:
       API_UPSTREAM: http://backend:5000
     depends_on:
       - backend
-
-volumes:
-  mongo_data:
