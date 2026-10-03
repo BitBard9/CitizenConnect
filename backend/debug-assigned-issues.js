@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 import Issue from "./src/models/Issue.js";
 import User from "./src/models/User.js";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/citizenconnect_test";
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  throw new Error("Missing MONGODB_URI");
+}
 
 async function debugAssignedIssues() {
   try {
