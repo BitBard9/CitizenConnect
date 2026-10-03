@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
-firebaseConfig.js
 serviceAccountKey.json
 backend/serviceAccountKey.json
 *.json

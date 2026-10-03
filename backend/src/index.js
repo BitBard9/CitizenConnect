@@ -1,12 +1,13 @@
 import "dotenv/config";
 import dns from "node:dns";
+import fs from "node:fs";
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 
 // Node 24.18 on Windows: mongodb+srv SRV lookup hits loopback DNS and fails
-// with querySrv ECONNREFUSED. Linux containers usually do not need this.
-if (process.platform === "win32") {
+// with querySrv ECONNREFUSED. Docker Desktop often needs public resolvers too.
+if (process.platform === "win32" || fs.existsSync("/.dockerenv")) {
   dns.setServers(["1.1.1.1", "8.8.8.8"]);
 }
 import usersRouter from "./routes/users.js";
@@ -36,13 +37,34 @@ app.use(cors({
 }));
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err.message));
+if (!process.env.MONGODB_URI) {
+  console.error("Missing MONGODB_URI");
+  process.exit(1);
+}
+
+async function connectMongo() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      family: 4,
+      serverSelectionTimeoutMS: 30000,
+    });
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    setTimeout(connectMongo, 5000);
+  }
+}
+
+connectMongo();
+
+const healthPayload = { status: "ok" };
 
 app.get("/health", (req, res) => {
-  res.json({ ok: true });
+  res.json(healthPayload);
+});
+
+app.get("/api/health", (req, res) => {
+  res.json(healthPayload);
 });
 
 // Add request logging middleware
