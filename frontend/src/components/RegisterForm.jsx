@@ -1462,9 +1462,8 @@ export default function RegisterForm() {
     setIsSubmitting(true);
     
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-    
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+
       // Sync user to MongoDB
       await api.post("/users/sync", {
         profile: {

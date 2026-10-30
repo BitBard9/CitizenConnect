@@ -67,6 +67,20 @@ app.get("/api/health", (req, res) => {
   res.json(healthPayload);
 });
 
+// Firebase web config for the browser (public by design). Served from here so the
+// frontend container needs no env, and no key is baked into the bundle.
+app.get("/api/config.js", (req, res) => {
+  const firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY || "",
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
+    projectId: process.env.FIREBASE_PROJECT_ID || "",
+    appId: process.env.FIREBASE_APP_ID || "",
+  };
+  res.type("application/javascript");
+  res.set("Cache-Control", "no-store");
+  res.send(`window.__FIREBASE_CONFIG__ = ${JSON.stringify(firebaseConfig)};\n`);
+});
+
 // Add request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);

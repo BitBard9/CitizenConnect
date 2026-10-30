@@ -2,8 +2,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// In Docker, nginx writes /config.js from FIREBASE_* env vars at container start
-// (see docker/firebase-config.sh). In local dev, set VITE_FIREBASE_* in frontend/.env.local.
+// index.html loads /api/config.js, which the backend builds from its FIREBASE_* env vars.
+// VITE_FIREBASE_* in frontend/.env.local is a fallback for running Vite without the backend.
 const runtimeConfig = window.__FIREBASE_CONFIG__ || {};
 
 const firebaseConfig = {

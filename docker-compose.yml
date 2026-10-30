@@ -33,10 +33,6 @@ services:
     image: citizenconnect
     ports:
       - "80:80"
-    env_file:
-      - ./backend/.env
-    environment:
-      API_UPSTREAM: http://backend:5000
     depends_on:
       backend:
         condition: service_healthy
