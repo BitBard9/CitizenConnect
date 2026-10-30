@@ -191,9 +191,9 @@
 // src/components/LoginForm.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 // import { doc, getDoc } from "firebase/firestore";
-import { auth, googleProvider } from "../config/firebaseConfig";
+import { auth } from "../config/firebaseConfig";
 import api from "../api/apiClients";
 import { dashboardPath } from "../context/AuthContext";
 
@@ -267,35 +267,6 @@ export default function LoginForm() {
       } else {
         setErrors({ email: "Login failed. Please try again." });
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-  
-      // Check if user already exists in MongoDB
-      const { data: existingUser } = await api.get("/users/me").catch(() => ({ data: null }));
-      
-      if (existingUser && existingUser.profile) {
-        console.log("Existing user found:", existingUser);
-        redirectByRole(existingUser.role);
-      } else {
-        // New user - redirect to registration page
-        // Sign out first so they can register properly
-        await auth.signOut();
-        setErrors({ email: "No account found. Please register first." });
-        setTimeout(() => {
-          navigate("/register");
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      setErrors({ email: "Google sign-in failed. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -375,22 +346,6 @@ export default function LoginForm() {
               )}
             </button>
           </form>
-
-          {/* Google Sign-In */}
-          <div className="mt-4">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200"
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                className="h-5 w-5"
-              />
-              Sign in with Google
-            </button>
-          </div>
 
           {/* Register Link */}
           <div className="mt-6 text-center">

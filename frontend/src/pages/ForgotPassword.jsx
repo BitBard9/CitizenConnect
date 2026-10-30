@@ -33,10 +33,9 @@ export default function ForgotPassword() {
     try {
       // Firebase automatically sends password reset email
       // The email contains a link that redirects to Firebase's hosted UI
-      await sendPasswordResetEmail(auth, email, {
-        url: window.location.origin + "/login", // Redirect after password reset
-        handleCodeInApp: false,
-      });
+      // No continue URL: Firebase rejects one whose host is not an
+      // Authorized domain, and the deployed host is a changing public IP.
+      await sendPasswordResetEmail(auth, email);
       setSuccess(true);
       setEmail("");
     } catch (error) {

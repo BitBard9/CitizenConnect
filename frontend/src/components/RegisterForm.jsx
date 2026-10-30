@@ -1352,12 +1352,9 @@
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 // import { doc, setDoc } from "firebase/firestore";
-import { auth, googleProvider } from "../config/firebaseConfig";
+import { auth } from "../config/firebaseConfig";
 import api from "../api/apiClients";
 
 export default function RegisterForm() {
@@ -1496,76 +1493,6 @@ export default function RegisterForm() {
     } catch (error) {
       console.error("Registration error:", error);
       setErrors({ general: error.message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    // Validate form first (except password fields)
-    const newErrors = {};
-
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required";
-
-    if (!formData.lastName.trim())
-      newErrors.lastName = "Last name is required";
-
-    if (!formData.phone.trim())
-      newErrors.phone = "Phone number is required";
-
-    // Role-specific validation
-    if (formData.role === "resident") {
-      if (!formData.building.trim())
-        newErrors.building = "Building is required";
-      if (!formData.unit.trim())
-        newErrors.unit = "Unit number is required";
-    }
-
-    if (formData.role === "technician") {
-      if (!formData.specialization || formData.specialization.length === 0)
-        newErrors.specialization = "At least one specialization is required";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-    
-      // Sync user to MongoDB with form data
-      await api.post("/users/sync", {
-        profile: {
-          username: formData.username || user.displayName?.split(" ")[0] || "user" + user.uid.slice(0, 6),
-          role: formData.role,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          building: formData.role === "resident" ? formData.building : "",
-          unit: formData.role === "resident" ? formData.unit : "",
-          specialization: formData.role === "technician" ? formData.specialization : []
-        }
-      });
-  
-      const { data: me } = await api.get("/users/me");
-      console.log("Backend /users/me:", me);
-      
-      // Redirect based on role from MongoDB
-      if (me.role === "committee") {
-        navigate("/committee");
-      } else if (me.role === "technician") {
-        navigate("/technician");
-      } else {
-        navigate("/resident");
-      }
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      setErrors({ general: error.message || "Google sign-in failed. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -1845,33 +1772,6 @@ export default function RegisterForm() {
               {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
           </form>
-
-          {/* Google Sign-in */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or register with</span>
-              </div>
-            </div>
-            <button
-              onClick={handleGoogleSignIn}
-              disabled={isSubmitting}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                className="h-5 w-5"
-              />
-              {isSubmitting ? "Processing..." : "Register with Google"}
-            </button>
-            <p className="mt-2 text-xs text-center text-gray-500">
-              Fill in your details above, then click to register with Google
-            </p>
-          </div>
 
           {/* Login Link */}
           <div className="mt-6 text-center">
